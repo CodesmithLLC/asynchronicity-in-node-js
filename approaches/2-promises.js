@@ -14,8 +14,8 @@ const connectToDBPromise = () => {
       if (err) reject(err)
 
       console.log('["data" from connectToDBPromise]', data)
-      resolve()
-      // we don't *need* to pass in data here - why?
+
+      resolve() // we don't *need* to pass in data here - why?
     })
   })
 }
@@ -37,10 +37,11 @@ const retrieveArticlePromise = () => {
 const saveArticleToDBPromise = (article) => {
   return new Promise((resolve, reject) => {
     mockDB.create(article, (err, data) => {
-      if (err) reject(err)
+      if (err) return reject(err)
 
       console.log('["data" from saveArticleToDBPromise]', data)
-      resolve()
+
+      resolve(data)
     })
   })
 }
@@ -50,8 +51,8 @@ const promises = () => {
 
   connectToDBPromise()
     .then(() => retrieveArticlePromise())
-    .then((article) => saveArticleToDBPromise(article))
+    .then((data) => saveArticleToDBPromise(data))
+    .then((data) => console.log('[final resolved data]', data)) // (we don't NEED to do this)
     .catch((err) => console.error(err.message))
 }
-
 promises()

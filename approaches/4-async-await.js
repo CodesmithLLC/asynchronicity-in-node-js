@@ -2,39 +2,65 @@
 import fs from 'fs'
 import MarkdownIt from 'markdown-it'
 import mockDB from '../mocks/db.js'
-import { promisify } from 'util'
 
 // constants
 import { BLOG_POST_PATH, DB_URI } from '../constants/constants.js'
 
 const markdownIt = new MarkdownIt()
 
-// promisify callback-based functions
-const readFileAsync = promisify(fs.readFile)
-const connectToDBAsync = promisify(mockDB.connect)
-const saveArticleToDBAsync = promisify(mockDB.create)
+/*
+  all of these functions are the same as before!
+*/
 
-const asyncAwait = async () => {
-  console.log('[running "async-await" approach]' + '\n')
+const connectToDBPromise = () => {
+  return new Promise((resolve, reject) => {
+    mockDB.connect(DB_URI, (err, data) => {
+      if (err) reject(err)
 
-  try {
-    // step 1: connect to mock db
-    const connectionData = await connectToDBAsync(DB_URI)
-    console.log('["data" from connectToDBAsync]', connectionData)
+      // console.log('["data" from connectToDBPromise]', data)
 
-    // step 2: retrieve article (i.e. read file) from filesystem
-    const fileData = await readFileAsync(BLOG_POST_PATH, 'utf-8')
-    console.log('["data" from readFileAsync]', fileData)
-
-    const htmlData = markdownIt.render(fileData) // parse markdown data to HTML
-    const article = { articleContent: htmlData }
-
-    // step 3: save the article to mock db
-    const savedData = await saveArticleToDBAsync(article)
-    console.log('["data" from saveArticleToDBAsync]', savedData)
-  } catch (err) {
-    console.error(err.message)
-  }
+      resolve()
+    })
+  })
 }
 
+const retrieveArticlePromise = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(BLOG_POST_PATH, 'utf-8', (err, data) => {
+      if (err) reject(err)
+
+      // console.log('["data" from retrieveArticlePromise]', data)
+
+      const htmlData = markdownIt.render(data)
+      const article = { articleContent: htmlData }
+      resolve(article)
+    })
+  })
+}
+
+const saveArticleToDBPromise = (article) => {
+  return new Promise((resolve, reject) => {
+    mockDB.create(article, (err, data) => {
+      if (err) return reject(err)
+
+      // console.log('["data" from saveArticleToDBPromise]', data)
+
+      resolve(data)
+    })
+  })
+}
+
+const asyncAwait = async () => {
+  console.log('[running "async/await" approach]' + '\n')
+
+  try {
+    await connectToDBPromise()
+    const article = await retrieveArticlePromise()
+    const savedArticle = await saveArticleToDBPromise(article)
+
+    console.log('saved article:', savedArticle)
+  } catch (err) {
+    console.error(err)
+  }
+}
 asyncAwait()

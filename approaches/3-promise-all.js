@@ -14,6 +14,7 @@ const connectToDBPromise = () => {
       if (err) reject(err)
 
       console.log('["data" from connectToDBPromise]', data)
+
       resolve()
     })
   })
@@ -33,28 +34,28 @@ const retrieveArticlePromise = () => {
   })
 }
 
-const saveArticleToDBPromise = (article) => {
+// near-identical to the saveArticleToDB in the original 'promises' approach, just a different input passed in
+const saveArticleToDBPromiseAlt = (resolvedPromiseArray) => {
+  const article = resolvedPromiseArray[1]
+  // what would we see if we tried to log the 0th element?
+
   return new Promise((resolve, reject) => {
     mockDB.create(article, (err, data) => {
       if (err) reject(err)
 
-      console.log('["data" from saveArticleToDBPromise]', data)
-      resolve()
+      console.log('["data" from saveArticleToDBPromiseAlt]', data)
+
+      resolve(data)
     })
   })
 }
 
 const promiseAll = () => {
-  console.log('[running "promise.all" approach]' + '\n')
+  console.log('[running "Promise.all()" approach]' + '\n')
 
-  // note: we can run the first two promises in parallel since they don't depend on each other
-  // the third promise (saving to db) depends on both, so it should be run after the first two resolve
+  // Promise.all() returns an array of pending promises
   Promise.all([connectToDBPromise(), retrieveArticlePromise()])
-    .then((results) => {
-      const article = results[1] // the article is the second result
-      return saveArticleToDBPromise(article)
-    })
+    .then((data) => saveArticleToDBPromiseAlt(data))
     .catch((err) => console.error(err.message))
 }
-
 promiseAll()
