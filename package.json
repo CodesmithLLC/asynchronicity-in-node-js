@@ -1,0 +1,11 @@
+{
+  "name": "asynchronicity-in-node",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "6 different approaches to handling asynchronicity in Node.js",
+  "author": "jaime de venecia",
+  "license": "MIT",
+  "dependencies": {
+    "markdown-it": "^14.1.0"
+  }
+}
